@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Calendar, FileText, Bell, MessageSquare, LogOut, ClipboardList, Users, Rocket, MessageCircle, Camera } from 'lucide-react';
-import { motion, Variants } from 'framer-motion';
+import { Bell, LogOut, ClipboardList, Users, Rocket, MessageCircle, Camera } from 'lucide-react';
+import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 
 interface HomeSectionProps {
   isAuthenticated: boolean;

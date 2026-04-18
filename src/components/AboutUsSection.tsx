@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import { ArrowLeft, UserCircle } from 'lucide-react';
 
 interface AboutUsProps {
@@ -17,12 +18,12 @@ const mockRoles = [
   { id: 8, role: 'Delegada de Cultura', name: 'Valentina Silva' }
 ];
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.1 } }
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0, transition: { type: 'spring' } }
 };

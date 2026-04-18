@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Home, Calendar, FileText, MessageSquare, Menu, X } from "lucide-react";
+import { Home, Calendar, FileText, MessageSquare } from "lucide-react";
 import HeroSection from "./components/HeroSection";
 import HomeSection from "./components/HomeSection";
 import CalendarSection from "./components/CalendarSection";
@@ -14,7 +14,6 @@ import WorkWithUsSection from "./components/WorkWithUsSection";
 function App() {
   const [activeTab, setActiveTab] = useState("hero");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showNav, setShowNav] = useState(false);
 
   // Basic styling for the nav
   const navStyles = {

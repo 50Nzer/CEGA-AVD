@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import { ArrowLeft, Clock, MapPin, Users, DollarSign, AlertCircle, Image as ImageIcon } from 'lucide-react';
 
 interface AnnouncementsProps {
@@ -36,12 +37,12 @@ const mockAnnouncements = [
   }
 ];
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.2 } }
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 200 } }
 };

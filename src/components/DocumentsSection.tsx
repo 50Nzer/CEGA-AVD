@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Download, FileText, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -28,7 +28,7 @@ const DocumentsSection = () => {
           show: { opacity: 1, transition: { staggerChildren: 0.1 } }
         }}
       >
-        {mockActas.map((acta, idx) => (
+        {mockActas.map((acta) => (
           <motion.div 
             key={acta.id} 
             className="liquid-glass hover-glass" 

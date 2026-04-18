@@ -1,16 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 
 interface HeroSectionProps {
   onEnter: () => void;
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ onEnter }) => {
-  const container = {
+  const container: Variants = {
     hidden: { opacity: 0 },
     show: { opacity: 1, transition: { staggerChildren: 0.15 } }
   };
-  const item = {
+  const item: Variants = {
     hidden: { opacity: 0, y: 30, filter: 'blur(10px)' },
     show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { type: 'spring', stiffness: 100 } }
   };

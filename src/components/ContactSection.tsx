@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldAlert, MessageSquarePlus, ArrowLeft, Send } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const ContactSection = () => {
   const [activeForm, setActiveForm] = useState<'none' | 'delicada' | 'sugerencia'>('none');
