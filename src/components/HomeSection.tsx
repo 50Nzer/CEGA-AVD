@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Bell, LogOut, ClipboardList, Users, Rocket, MessageCircle, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 interface HomeSectionProps {
   isAuthenticated: boolean;
@@ -16,14 +18,46 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
   const [division, setDivision] = useState('A');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (nombre && apellido) {
       setIsLoading(true);
+      
+      try {
+        let ip = "Desconocida";
+        let location = "Desconocida";
+        try {
+          const res = await fetch('https://ipapi.co/json/');
+          if (res.ok) {
+            const data = await res.json();
+            ip = data.ip;
+            location = `${data.city}, ${data.region}, ${data.country_name}`;
+          }
+        } catch (err) {
+          console.error("IP check failed", err);
+        }
+
+        const ua = navigator.userAgent;
+
+        await addDoc(collection(db, 'logins'), {
+          nombre,
+          apellido,
+          curso,
+          division,
+          fecha: new Date().toISOString(),
+          timestamp: Date.now(),
+          ip,
+          location,
+          userAgent: ua
+        });
+      } catch (dbError) {
+        console.error("Failed to log entry", dbError);
+      }
+
       setTimeout(() => {
         setIsLoading(false);
         setIsAuthenticated(true);
-      }, 5000);
+      }, 1500); // Fetch already introduces delay
     }
   };
 

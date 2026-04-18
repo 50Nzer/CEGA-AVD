@@ -1,16 +1,20 @@
-
+import { useState, useEffect } from 'react';
 import { Download, FileText, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const mockActas = [
-  { id: 1, title: 'Acta de Asamblea Extraordinaria', date: '10 Abril 2026', status: 'Enviada' },
-  { id: 2, title: 'Propuesta de Modificación CCEE', date: '02 Abril 2026', status: 'Aprobada' },
-  { id: 3, title: 'Acta N°4 - Reunión de Delegados', date: '15 Marzo 2026', status: 'Enviada' },
-  { id: 4, title: 'Solicitud de Presupuesto Evento Deportivo', date: '28 Febrero 2026', status: 'Revisión' },
-  { id: 5, title: 'Acta Constitutiva Anual Centro', date: '15 Febrero 2026', status: 'Aprobada' },
-];
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 const DocumentsSection = () => {
+  const [actas, setActas] = useState<any[]>([]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'documentos')); 
+    const unsub = onSnapshot(q, (snap) => {
+      setActas(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsub();
+  }, []);
+
   return (
     <div className="container animate-slide-up" style={{ padding: '2rem 1rem' }}>
       <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
@@ -28,7 +32,7 @@ const DocumentsSection = () => {
           show: { opacity: 1, transition: { staggerChildren: 0.1 } }
         }}
       >
-        {mockActas.map((acta) => (
+        {actas.map((acta) => (
           <motion.div 
             key={acta.id} 
             className="liquid-glass hover-glass" 
@@ -51,9 +55,14 @@ const DocumentsSection = () => {
               </div>
             </div>
 
-            <button className="liquid-glass-strong hover-glass" style={{ padding: '0.75rem 1.5rem', borderRadius: '24px', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
-              <Download size={18} /> Descargar PDF
-            </button>
+            <a 
+              href={acta.url} 
+              target="_blank" rel="noopener noreferrer"
+              className="liquid-glass-strong hover-glass" 
+              style={{ textDecoration: 'none', padding: '0.75rem 1.5rem', borderRadius: '24px', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'white' }}
+            >
+              <Download size={18} /> Abrir Archivo
+            </a>
             
           </motion.div>
         ))}

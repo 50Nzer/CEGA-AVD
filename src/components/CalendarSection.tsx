@@ -1,28 +1,58 @@
 import { useState, useEffect } from 'react';
-import { format, startOfWeek, addDays, startOfMonth, endOfMonth, endOfWeek, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
+import { format, startOfWeek, addDays, startOfMonth, endOfMonth, endOfWeek, isSameMonth, isSameDay, addMonths, subMonths, isWeekend } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
-const generateRandomHolidays = (year: number, month: number) => {
-  const holidays = [];
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const numHolidays = Math.floor(Math.random() * 3) + 2; // 2 to 4 random days
-  
-  for (let i = 0; i < numHolidays; i++) {
-    const randomDay = Math.floor(Math.random() * daysInMonth) + 1;
-    holidays.push(new Date(year, month, randomDay));
-  }
-  return holidays;
-};
+const officialHolidays2026 = [
+  '2026-01-01', '2026-02-16', '2026-02-17', '2026-03-24', 
+  '2026-04-02', '2026-04-03', '2026-05-01', '2026-05-25', 
+  '2026-06-20', '2026-07-09', '2026-12-08', '2026-12-25'
+];
 
 const CalendarSection = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [holidays, setHolidays] = useState<Date[]>([]);
+  const [eventosFirestore, setEventosFirestore] = useState<any[]>([]);
 
   useEffect(() => {
-    setHolidays(generateRandomHolidays(currentMonth.getFullYear(), currentMonth.getMonth()));
-  }, [currentMonth]);
+    const unsub = onSnapshot(query(collection(db, 'eventos')), (snap) => {
+      setEventosFirestore(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsub();
+  }, []);
+
+  const getEventForDay = (day: Date) => {
+    // 1. Check Custom Firestore Events
+    const customEvent = eventosFirestore.find(ev => {
+      // ev.dateStr format usually: YYYY-MM-DD
+      const evDate = new Date(ev.dateStr + 'T00:00:00'); 
+      return isSameDay(evDate, day);
+    });
+
+    if (customEvent) {
+      return {
+        isHoliday: customEvent.isHoliday || false,
+        title: customEvent.title,
+        color: customEvent.color || '#fca5a5',
+        bg: customEvent.color ? `${customEvent.color}33` : 'rgba(239, 68, 68, 0.15)' 
+      };
+    }
+
+    // 2. Check Weekends
+    if (isWeekend(day)) {
+      return { isHoliday: true, title: 'Fin de Semana', color: '#fca5a5', bg: 'rgba(239, 68, 68, 0.15)' };
+    }
+
+    // 3. Check Official Holidays
+    const dayStr = format(day, 'yyyy-MM-dd');
+    if (officialHolidays2026.includes(dayStr)) {
+      return { isHoliday: true, title: 'Feriado Nacional', color: '#fca5a5', bg: 'rgba(239, 68, 68, 0.15)' };
+    }
+
+    return null;
+  };
 
   const renderHeader = () => {
     return (
@@ -69,8 +99,7 @@ const CalendarSection = () => {
     while (day <= endDate) {
       for (let i = 0; i < 7; i++) {
         formattedDate = format(day, 'd');
-        const cloneDay = day;
-        const isHoliday = holidays.some(h => isSameDay(h, cloneDay)) || i === 0 || i === 6; // random holidays + weekends
+        const eventInfo = getEventForDay(day);
         const isCurrentMonth = isSameMonth(day, monthStart);
 
         days.push(
@@ -85,19 +114,30 @@ const CalendarSection = () => {
               border: '1px solid rgba(255,255,255,0.02)',
               display: 'flex',
               flexDirection: 'column',
-              background: isHoliday && isCurrentMonth ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255,255,255, 0.01)',
-              borderColor: isHoliday && isCurrentMonth ? 'rgba(239, 68, 68, 0.3)' : 'rgba(255,255,255,0.02)'
+              background: eventInfo && isCurrentMonth ? eventInfo.bg : 'rgba(255,255,255, 0.01)',
+              borderColor: eventInfo && isCurrentMonth ? eventInfo.color : 'rgba(255,255,255,0.02)'
             }}
           >
             <span style={{ 
               fontSize: '1.2rem', 
               fontWeight: 600, 
-              color: isHoliday && isCurrentMonth ? '#fca5a5' : 'var(--text)',
+              color: eventInfo && isCurrentMonth ? eventInfo.color : 'var(--text)',
               marginBottom: 'auto'
             }}>{formattedDate}</span>
-            {isHoliday && isCurrentMonth && (
-              <span style={{ fontSize: '0.75rem', color: '#fca5a5', background: 'rgba(239, 68, 68, 0.2)', padding: '0.2rem 0.4rem', borderRadius: '4px', textAlign: 'center', marginTop: '0.5rem' }}>
-                Sin Clases
+
+            {eventInfo && isCurrentMonth && (
+              <span style={{ 
+                fontSize: '0.75rem', 
+                color: eventInfo.color, 
+                background: eventInfo.bg, 
+                padding: '0.2rem 0.4rem', 
+                borderRadius: '4px', 
+                textAlign: 'center', 
+                marginTop: '0.5rem',
+                border: `1px solid ${eventInfo.color}40`,
+                lineHeight: 1.2
+              }}>
+                {eventInfo.title}
               </span>
             )}
           </div>
@@ -129,7 +169,7 @@ const CalendarSection = () => {
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} style={{ maxWidth: '1000px', margin: '2rem auto 0', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
         <div className="liquid-glass" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(239, 68, 68, 0.2)', padding: '0.5rem 1rem', borderRadius: '100px', color: '#fca5a5' }}>
-          <Info size={16} /> Feriados y Fin de semana marcados en rojo
+          <Info size={16} /> Feriados y Fin de semana marcados en automático
         </div>
       </motion.div>
     </div>

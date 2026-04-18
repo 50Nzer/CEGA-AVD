@@ -10,6 +10,7 @@ import AnnouncementsSection from "./components/AnnouncementsSection";
 import SurveysSection from "./components/SurveysSection";
 import AboutUsSection from "./components/AboutUsSection";
 import WorkWithUsSection from "./components/WorkWithUsSection";
+import AdminPanel from "./components/AdminPanel";
 
 function App() {
   const [activeTab, setActiveTab] = useState("hero");
@@ -141,8 +142,18 @@ function App() {
             {activeTab === "encuestas" && <SurveysSection onBack={() => setActiveTab("home")} />}
             {activeTab === "quienes-somos" && <AboutUsSection onBack={() => setActiveTab("home")} />}
             {activeTab === "trabaja-con-nosotros" && <WorkWithUsSection onBack={() => setActiveTab("home")} />}
+            {activeTab === "admin" && <AdminPanel onBack={() => setActiveTab("home")} />}
           </motion.div>
         </AnimatePresence>
+
+        {activeTab !== "admin" && (
+          <button 
+            onClick={() => setActiveTab("admin")} 
+            style={{ display: 'block', margin: '2rem auto 1rem', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold' }}
+          >
+            AP
+          </button>
+        )}
       </main>
     </>
   );
