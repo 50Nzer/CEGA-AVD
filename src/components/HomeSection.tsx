@@ -2,16 +2,19 @@ import React, { useState } from 'react';
 import { Bell, LogOut, ClipboardList, Users, Rocket, MessageCircle, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+
+import type { CurrentUser } from '../App';
 
 interface HomeSectionProps {
   isAuthenticated: boolean;
   setIsAuthenticated: (val: boolean) => void;
   navigateTo: (tab: string) => void;
+  setCurrentUser: (user: CurrentUser | null) => void;
 }
 
-const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthenticated, navigateTo }) => {
+const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthenticated, navigateTo, setCurrentUser }) => {
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [curso, setCurso] = useState('1');
@@ -37,18 +40,27 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
           console.error("IP check failed", err);
         }
 
-        const ua = navigator.userAgent;
+        const nameClient = navigator.userAgent;
+        const now = new Date();
+        const fecha = now.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const hora = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-        await addDoc(collection(db, 'logins'), {
-          nombre,
-          apellido,
-          curso,
-          division,
-          fecha: new Date().toISOString(),
-          timestamp: Date.now(),
-          ip,
-          location,
-          userAgent: ua
+        // Obtener cantidad de documentos existentes para el ID secuencial
+        const loginsSnap = await getDocs(collection(db, 'logins'));
+        const nextIndex = loginsSnap.size + 1;
+        const docId = `LOGIN-${nextIndex}`;
+
+        await setDoc(doc(db, 'logins', docId), {
+          Nombre: nombre,
+          Apellido: apellido,
+          Curso: curso,
+          Division: division,
+          Fecha: fecha,
+          Hora: hora,
+          IP: ip,
+          Location: location,
+          Timestamp: serverTimestamp(),
+          NameClient: nameClient
         });
       } catch (dbError) {
         console.error("Failed to log entry", dbError);
@@ -57,7 +69,8 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
       setTimeout(() => {
         setIsLoading(false);
         setIsAuthenticated(true);
-      }, 1500); // Fetch already introduces delay
+        setCurrentUser({ nombre, apellido, curso, division });
+      }, 1500);
     }
   };
 
