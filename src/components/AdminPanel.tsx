@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../lib/firebase';
-import { ArrowLeft, Trash2, Bell, FileText, Calendar, Users, MessageSquare, LogOut } from 'lucide-react';
+import { ArrowLeft, Trash2, Bell, FileText, Calendar, Users, MessageSquare, LogOut, ClipboardList, ToggleLeft, ToggleRight, Plus, X } from 'lucide-react';
 
 interface AdminPanelProps { onBack: () => void; }
 
@@ -12,7 +12,7 @@ const AUTHORIZED_EMAILS = [
   'centrodeestudiantesgarzon@gmail.com',
 ];
 
-type Tab = 'anuncios' | 'actas' | 'eventos' | 'logins' | 'contactos';
+type Tab = 'anuncios' | 'actas' | 'eventos' | 'logins' | 'contactos' | 'encuestas';
 
 const inp: React.CSSProperties = { width: '100%', padding: '0.5rem 0.75rem', background: '#1a1a2e', border: '1px solid #333', color: '#fff', borderRadius: '8px', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: '0.9rem', marginBottom: '0.75rem' };
 const btn = (color: string): React.CSSProperties => ({ padding: '0.5rem 1rem', background: color, border: 'none', color: '#fff', cursor: 'pointer', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem' });
@@ -29,11 +29,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const [eventos, setEventos] = useState<any[]>([]);
   const [logins, setLogins] = useState<any[]>([]);
   const [contactos, setContactos] = useState<any[]>([]);
+  const [encuestas, setEncuestas] = useState<any[]>([]);
 
   // Forms
   const [anuncioModel, setAnuncioModel] = useState({ title: '', subtitle: '', details: '', tagPrecio: '', tagHora: '', tagLugar: '', tagQuienes: '', tagObligatorio: false });
   const [docModel, setDocModel] = useState({ title: '', status: 'Aprobada', url: '' });
   const [eventoModel, setEventoModel] = useState({ title: '', dateStr: '', color: '#ef4444', isHoliday: true });
+  const [encuestaModel, setEncuestaModel] = useState({ titulo: '', descripcion: '', fechaCierre: '' });
+  const [opciones, setOpciones] = useState<string[]>(['', '']);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -54,6 +57,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
       onSnapshot(collection(db, 'eventos'), s => setEventos(s.docs.map(d => ({ id: d.id, ...d.data() })))),
       onSnapshot(collection(db, 'logins'), s => setLogins(s.docs.map(d => ({ id: d.id, ...d.data() })))),
       onSnapshot(query(collection(db, 'contactos'), orderBy('enviadoEn', 'desc')), s => setContactos(s.docs.map(d => ({ id: d.id, ...d.data() })))),
+      onSnapshot(query(collection(db, 'encuestas'), orderBy('createdAt', 'desc')), s => setEncuestas(s.docs.map(d => ({ id: d.id, ...d.data() })))),
     ];
     return () => subs.forEach(u => u());
   }, [user]);
@@ -85,10 +89,38 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
 
   const del = (col: string, id: string) => { if (confirm('¿Eliminar?')) deleteDoc(doc(db, col, id)); };
 
+  const addEncuesta = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const opcionesValidas = opciones.filter(o => o.trim());
+    if (opcionesValidas.length < 2) { alert('Necesitás al menos 2 opciones.'); return; }
+    const opcionesMap: Record<string, { texto: string; votos: number }> = {};
+    opcionesValidas.forEach((o, i) => { opcionesMap[`opt${i}`] = { texto: o.trim(), votos: 0 }; });
+    await addDoc(collection(db, 'encuestas'), {
+      ...encuestaModel,
+      opciones: opcionesMap,
+      activa: true,
+      createdAt: serverTimestamp(),
+    });
+    setEncuestaModel({ titulo: '', descripcion: '', fechaCierre: '' });
+    setOpciones(['', '']);
+  };
+
+  const toggleEncuesta = async (id: string, activa: boolean) => {
+    await updateDoc(doc(db, 'encuestas', id), { activa: !activa });
+  };
+
+  const resetVotos = async (enc: any) => {
+    if (!confirm('¿Reiniciar todos los votos a 0?')) return;
+    const resetOpciones: Record<string, any> = {};
+    Object.keys(enc.opciones).forEach(k => { resetOpciones[k] = { texto: enc.opciones[k].texto, votos: 0 }; });
+    await updateDoc(doc(db, 'encuestas', enc.id), { opciones: resetOpciones });
+  };
+
   const tabConfig: { id: Tab; label: string; icon: React.ReactNode; count?: number }[] = [
     { id: 'anuncios', label: 'Anuncios', icon: <Bell size={15} />, count: anuncios.length },
     { id: 'actas', label: 'Actas', icon: <FileText size={15} />, count: documentos.length },
     { id: 'eventos', label: 'Eventos', icon: <Calendar size={15} />, count: eventos.length },
+    { id: 'encuestas', label: 'Encuestas', icon: <ClipboardList size={15} />, count: encuestas.length },
     { id: 'logins', label: 'Logins', icon: <Users size={15} />, count: logins.length },
     { id: 'contactos', label: 'Contactos', icon: <MessageSquare size={15} />, count: contactos.length },
   ];
@@ -302,6 +334,98 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                   <p style={{ margin: 0, fontSize: '0.78rem', color: '#555' }}>
                     {c.anonimo ? '👤 Anónimo' : c.remitente ? `👤 ${c.remitente.nombre} ${c.remitente.apellido} — ${c.remitente.curso}° ${c.remitente.division}` : '—'}
                   </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── ENCUESTAS ── */}
+      {activeTab === 'encuestas' && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: '1.5rem', alignItems: 'start' }}>
+
+          {/* Form */}
+          <div style={{ border: '1px solid #1e1e2e', borderRadius: '12px', padding: '1.25rem', background: '#111' }}>
+            <h3 style={{ margin: '0 0 1rem', color: '#818cf8' }}>Nueva Encuesta</h3>
+            <form onSubmit={addEncuesta}>
+              <label style={{ color: '#888', fontSize: '0.78rem' }}>Título *</label>
+              <input required style={inp} value={encuestaModel.titulo} onChange={e => setEncuestaModel({ ...encuestaModel, titulo: e.target.value })} />
+
+              <label style={{ color: '#888', fontSize: '0.78rem' }}>Descripción</label>
+              <textarea style={{ ...inp, minHeight: '60px', resize: 'vertical' }} value={encuestaModel.descripcion} onChange={e => setEncuestaModel({ ...encuestaModel, descripcion: e.target.value })} />
+
+              <label style={{ color: '#888', fontSize: '0.78rem' }}>Fecha de cierre (opcional)</label>
+              <input type="date" style={inp} value={encuestaModel.fechaCierre} onChange={e => setEncuestaModel({ ...encuestaModel, fechaCierre: e.target.value })} />
+
+              <label style={{ color: '#888', fontSize: '0.78rem' }}>Opciones (mín. 2) *</label>
+              {opciones.map((op, i) => (
+                <div key={i} style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.5rem' }}>
+                  <input
+                    style={{ ...inp, marginBottom: 0, flex: 1 }}
+                    placeholder={`Opción ${i + 1}`}
+                    value={op}
+                    onChange={e => { const next = [...opciones]; next[i] = e.target.value; setOpciones(next); }}
+                  />
+                  {opciones.length > 2 && (
+                    <button type="button" onClick={() => setOpciones(opciones.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0 0.25rem' }}>
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button type="button" onClick={() => setOpciones([...opciones, ''])} style={{ ...btn('#1e1e3e'), width: '100%', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                <Plus size={14} /> Agregar opción
+              </button>
+              <button type="submit" style={{ ...btn('#4f46e5'), width: '100%', padding: '0.625rem' }}>+ Publicar Encuesta</button>
+            </form>
+          </div>
+
+          {/* List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <h3 style={{ margin: 0, color: '#818cf8' }}>Encuestas ({encuestas.length})</h3>
+            {encuestas.length === 0 && <p style={{ color: '#555' }}>Sin encuestas aún.</p>}
+            {encuestas.map(enc => {
+              const opts = enc.opciones ? Object.entries(enc.opciones) as [string, any][] : [];
+              const totalVotos = opts.reduce((s, [, v]) => s + (v.votos ?? 0), 0);
+              return (
+                <div key={enc.id} style={{ border: `1px solid ${enc.activa ? '#2a2a4e' : '#222'}`, borderRadius: '10px', padding: '1rem', background: enc.activa ? '#0d0d1f' : '#0a0a0a' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                    <div style={{ flex: 1, overflow: 'hidden' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem', flexWrap: 'wrap' }}>
+                        <span style={{ background: enc.activa ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.06)', color: enc.activa ? '#34d399' : '#666', padding: '0.1rem 0.5rem', borderRadius: '100px', fontSize: '0.72rem', fontWeight: 700 }}>
+                          {enc.activa ? '● ACTIVA' : '○ CERRADA'}
+                        </span>
+                        {enc.fechaCierre && <span style={{ color: '#555', fontSize: '0.72rem' }}>Cierra: {enc.fechaCierre}</span>}
+                      </div>
+                      <strong style={{ color: '#e2e8f0', fontSize: '0.95rem' }}>{enc.titulo}</strong>
+                      {enc.descripcion && <p style={{ margin: '0.2rem 0 0', color: '#666', fontSize: '0.78rem' }}>{enc.descripcion}</p>}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.4rem', marginLeft: '0.5rem', flexShrink: 0, alignItems: 'center' }}>
+                      <button onClick={() => toggleEncuesta(enc.id, enc.activa)} title={enc.activa ? 'Cerrar' : 'Activar'} style={{ background: 'none', border: 'none', color: enc.activa ? '#34d399' : '#555', cursor: 'pointer' }}>
+                        {enc.activa ? <ToggleRight size={22} /> : <ToggleLeft size={22} />}
+                      </button>
+                      <button onClick={() => resetVotos(enc)} title="Reiniciar votos" style={{ background: 'none', border: '1px solid #333', color: '#fbbf24', cursor: 'pointer', borderRadius: '6px', padding: '0.2rem 0.4rem', fontSize: '0.85rem' }}>↺</button>
+                      <button onClick={() => del('encuestas', enc.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={16} /></button>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {opts.map(([key, val]) => {
+                      const pct = totalVotos > 0 ? Math.round((val.votos / totalVotos) * 100) : 0;
+                      return (
+                        <div key={key}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: '#94a3b8', marginBottom: '0.2rem' }}>
+                            <span>{val.texto}</span>
+                            <span style={{ color: '#818cf8' }}>{val.votos} voto{val.votos !== 1 ? 's' : ''} ({pct}%)</span>
+                          </div>
+                          <div style={{ height: '6px', background: '#1e1e2e', borderRadius: '100px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #4f46e5, #818cf8)', borderRadius: '100px', transition: 'width 0.4s ease' }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <p style={{ margin: '0.5rem 0 0', color: '#555', fontSize: '0.72rem' }}>Total: {totalVotos} voto{totalVotos !== 1 ? 's' : ''}</p>
+                  </div>
                 </div>
               );
             })}
