@@ -6,7 +6,11 @@ import { ArrowLeft, Trash2, Bell, FileText, Calendar, Users, MessageSquare, LogO
 
 interface AdminPanelProps { onBack: () => void; }
 
-const AUTHORIZED_EMAIL = 'agustinvegabrunetto7@gmail.com';
+const AUTHORIZED_EMAILS = [
+  'agustinvegabrunetto7@gmail.com',
+  'gemini50nzer@gmail.com',
+  'centrodeestudiantesgarzon@gmail.com',
+];
 
 type Tab = 'anuncios' | 'actas' | 'eventos' | 'logins' | 'contactos';
 
@@ -34,7 +38,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       if (u) {
-        if (u.email === AUTHORIZED_EMAIL) { setUser(u); setError(''); }
+        if (u.email && AUTHORIZED_EMAILS.includes(u.email)) { setUser(u); setError(''); }
         else { signOut(auth); setError('Email no autorizado.'); }
       } else { setUser(null); }
       setLoading(false);
@@ -57,7 +61,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const handleGoogleLogin = async () => {
     try {
       const res = await signInWithPopup(auth, googleProvider);
-      if (res.user.email !== AUTHORIZED_EMAIL) { await signOut(auth); setError('Email no autorizado.'); }
+      if (!res.user.email || !AUTHORIZED_EMAILS.includes(res.user.email)) { await signOut(auth); setError('Email no autorizado.'); }
     } catch (e: any) { setError(e.message); }
   };
 
