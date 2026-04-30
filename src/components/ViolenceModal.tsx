@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, X } from 'lucide-react';
 
@@ -89,13 +90,17 @@ const ViolenceModal: React.FC<ViolenceModalProps> = React.memo(({ isOpen, onClos
   useEffect(() => {
     if (!isOpen) {
       setTimeLeft(15);
+      document.body.style.overflow = '';
       return;
     }
+
+    document.body.style.overflow = 'hidden';
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
+          document.body.style.overflow = '';
           window.open('https://docs.google.com/forms/d/1gjkQttFdWdm66cTtdAWsGuOZ_9ACf95eNToL--TXTP4/viewform', '_blank');
           onClose();
           return 0;
@@ -104,144 +109,148 @@ const ViolenceModal: React.FC<ViolenceModalProps> = React.memo(({ isOpen, onClos
       });
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      document.body.style.overflow = '';
+    };
   }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
 
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (timeLeft / 15) * circumference;
 
-  return (
+  return createPortal(
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'rgba(0,0,0,0.85)',
-          backdropFilter: 'blur(12px)',
-          padding: '1rem'
-        }}
-      >
+      {isOpen && (
         <motion.div
-          initial={{ scale: 0.9, y: 20 }}
-          animate={{ scale: 1, y: 0 }}
-          exit={{ scale: 0.9, y: 20 }}
-          className="liquid-glass"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           style={{
-            maxWidth: '400px',
-            width: '100%',
-            padding: '2.5rem',
-            textAlign: 'center',
-            position: 'relative',
-            border: '1px solid rgba(239, 68, 68, 0.4)',
-            boxShadow: '0 0 40px rgba(239, 68, 68, 0.2)',
-            background: 'rgba(20, 0, 0, 0.6)'
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.85)',
+            backdropFilter: 'blur(12px)',
+            padding: '1rem'
           }}
         >
-          <button
-            onClick={onClose}
-            style={{
-              position: 'absolute',
-              top: '1rem',
-              right: '1rem',
-              background: 'rgba(255,255,255,0.1)',
-              border: 'none',
-              borderRadius: '50%',
-              padding: '0.5rem',
-              color: 'white',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'background 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-          >
-            <X size={20} />
-          </button>
-
           <motion.div
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            <AlertTriangle size={48} color="#ef4444" style={{ margin: '0 auto 1.5rem' }} />
-          </motion.div>
-          
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: '#fca5a5' }}>
-            Redirigiendo al Formulario
-          </h2>
-          
-          <div style={{ height: '2rem', marginBottom: '2rem' }}>
-            <TypewriterText />
-          </div>
-
-          <div style={{ position: 'relative', width: '100px', height: '100px', margin: '0 auto 2rem' }}>
-            <svg width="100" height="100" viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
-              <circle
-                cx="50"
-                cy="50"
-                r={radius}
-                fill="none"
-                stroke="rgba(239, 68, 68, 0.2)"
-                strokeWidth="6"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r={radius}
-                fill="none"
-                stroke="#ef4444"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                style={{ transition: 'stroke-dashoffset 1s linear' }}
-              />
-            </svg>
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '2rem',
-              fontWeight: 'bold',
-              color: '#ef4444'
-            }}>
-              {timeLeft}
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="liquid-glass-strong hover-glass"
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 20 }}
+            className="liquid-glass"
             style={{
+              maxWidth: '400px',
               width: '100%',
-              padding: '1rem',
-              borderRadius: '12px',
-              fontSize: '1.1rem',
-              fontWeight: 600,
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              color: '#fca5a5',
-              cursor: 'pointer'
+              padding: '2.5rem',
+              textAlign: 'center',
+              position: 'relative',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              boxShadow: '0 0 40px rgba(239, 68, 68, 0.2)',
+              background: 'rgba(20, 0, 0, 0.6)'
             }}
           >
-            Cancelar
-          </button>
+            <button
+              onClick={onClose}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                padding: '0.5rem',
+                color: 'white',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+            >
+              <X size={20} />
+            </button>
+
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <AlertTriangle size={48} color="#ef4444" style={{ margin: '0 auto 1.5rem' }} />
+            </motion.div>
+            
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: '#fca5a5' }}>
+              Redirigiendo al Formulario
+            </h2>
+            
+            <div style={{ height: '2rem', marginBottom: '2rem' }}>
+              <TypewriterText />
+            </div>
+
+            <div style={{ position: 'relative', width: '100px', height: '100px', margin: '0 auto 2rem' }}>
+              <svg width="100" height="100" viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
+                <circle
+                  cx="50"
+                  cy="50"
+                  r={radius}
+                  fill="none"
+                  stroke="rgba(239, 68, 68, 0.2)"
+                  strokeWidth="6"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r={radius}
+                  fill="none"
+                  stroke="#ef4444"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  style={{ transition: 'stroke-dashoffset 1s linear' }}
+                />
+              </svg>
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '2rem',
+                fontWeight: 'bold',
+                color: '#ef4444'
+              }}>
+                {timeLeft}
+              </div>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="liquid-glass-strong hover-glass"
+              style={{
+                width: '100%',
+                padding: '1rem',
+                borderRadius: '12px',
+                fontSize: '1.1rem',
+                fontWeight: 600,
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                color: '#fca5a5',
+                cursor: 'pointer'
+              }}
+            >
+              Cancelar
+            </button>
+          </motion.div>
         </motion.div>
-      </motion.div>
-    </AnimatePresence>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 });
 

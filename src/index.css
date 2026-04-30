@@ -18,7 +18,7 @@
   --glass-strong-shadow: rgba(0, 0, 0, 0.2);
   
   --beam-opacity: 0.6;
-  --beam-mix: screen;
+  --beam-mix: normal;
 }
 
 [data-theme='light'] {
@@ -82,9 +82,10 @@ html {
   min-height: 500px;
   top: -10%;
   left: -10%;
-  background: radial-gradient(circle, rgba(255, 60, 90, 0.5) 0%, rgba(255, 60, 90, 0) 70%);
-  animation: floatRed 12s infinite alternate ease-in-out;
+  background: radial-gradient(circle, rgba(255, 60, 90, 0.6) 0%, rgba(255, 60, 90, 0) 35%, rgba(5, 5, 8, 0.9) 55%, transparent 70%);
+  animation: floatRed 8s infinite alternate ease-in-out;
   will-change: transform;
+  z-index: 3;
 }
 
 .blue-beam {
@@ -94,9 +95,10 @@ html {
   min-height: 550px;
   bottom: -15%;
   right: -10%;
-  background: radial-gradient(circle, rgba(60, 130, 255, 0.5) 0%, rgba(60, 130, 255, 0) 70%);
-  animation: floatBlue 15s infinite alternate ease-in-out;
+  background: radial-gradient(circle, rgba(60, 130, 255, 0.6) 0%, rgba(60, 130, 255, 0) 35%, rgba(5, 5, 8, 0.9) 55%, transparent 70%);
+  animation: floatBlue 10s infinite alternate ease-in-out;
   will-change: transform;
+  z-index: 2;
 }
 
 .yellow-beam {
@@ -105,29 +107,32 @@ html {
   min-width: 400px;
   min-height: 400px;
   top: 35%;
-  left: 20%;
-  background: radial-gradient(circle, rgba(255, 220, 50, 0.4) 0%, rgba(255, 220, 50, 0) 70%);
-  animation: floatYellow 18s infinite alternate ease-in-out;
+  left: 10%;
+  background: radial-gradient(circle, rgba(255, 220, 50, 0.5) 0%, rgba(255, 220, 50, 0) 35%, rgba(5, 5, 8, 0.9) 55%, transparent 70%);
+  animation: floatYellow 12s infinite alternate ease-in-out;
   will-change: transform;
+  z-index: 1;
 }
 
 @keyframes floatRed {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(15vw, -10vh) scale(1.3); }
-  100% { transform: translate(30vw, 15vh) scale(0.9); }
+  0% { transform: translate(0, 0) scale(1); opacity: var(--beam-opacity); }
+  50% { transform: translate(8vw, 5vh) scale(1.1); opacity: calc(var(--beam-opacity) * 1.5); }
+  100% { transform: translate(15vw, 10vh) scale(0.9); opacity: calc(var(--beam-opacity) * 0.8); }
 }
 
 @keyframes floatBlue {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-20vw, 15vh) scale(1.1); }
-  100% { transform: translate(-35vw, -5vh) scale(1.4); }
+  0% { transform: translate(0, 0) scale(1); opacity: var(--beam-opacity); }
+  50% { transform: translate(-8vw, -5vh) scale(1.1); opacity: calc(var(--beam-opacity) * 0.7); }
+  100% { transform: translate(-15vw, -10vh) scale(1.2); opacity: calc(var(--beam-opacity) * 1.4); }
 }
 
 @keyframes floatYellow {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(10vw, 20vh) scale(1.2); }
-  100% { transform: translate(-15vw, 30vh) scale(0.8); }
+  0% { transform: translate(0, 0) scale(1); opacity: var(--beam-opacity); }
+  50% { transform: translate(10vw, -5vh) scale(1.1); opacity: calc(var(--beam-opacity) * 1.3); }
+  100% { transform: translate(0vw, 15vh) scale(0.9); opacity: calc(var(--beam-opacity) * 0.6); }
 }
+
+
 
 @media (max-width: 768px) {
   .animated-bg {

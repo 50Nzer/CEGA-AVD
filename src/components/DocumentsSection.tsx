@@ -35,7 +35,7 @@ const DocumentsSection = () => {
         {actas.map((acta) => (
           <motion.div 
             key={acta.id} 
-            className="liquid-glass hover-glass" 
+            className="liquid-glass hover-glass acta-item" 
             variants={{ hidden: { opacity: 0, x: -20 }, show: { opacity: 1, x: 0, transition: { type: 'spring' } } }}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem 2rem', borderRadius: '24px' }}
           >
@@ -70,8 +70,8 @@ const DocumentsSection = () => {
       
       <style>{`
         @media (max-width: 600px) {
-          .hover-glass { flex-direction: column; gap: 1rem; align-items: flex-start !important; }
-          .hover-glass button { width: 100%; justify-content: center; }
+          .acta-item { flex-direction: column; gap: 1rem; align-items: flex-start !important; }
+          .acta-item a { width: 100%; justify-content: center; }
         }
       `}</style>
     </div>
