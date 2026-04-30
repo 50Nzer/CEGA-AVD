@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Home, Calendar, FileText, MessageSquare } from "lucide-react";
 import HeroSection from "./components/HeroSection";
 import HomeSection from "./components/HomeSection";
+
 import CalendarSection from "./components/CalendarSection";
 import DocumentsSection from "./components/DocumentsSection";
 import ContactSection from "./components/ContactSection";
@@ -11,6 +12,7 @@ import SurveysSection from "./components/SurveysSection";
 import AboutUsSection from "./components/AboutUsSection";
 import WorkWithUsSection from "./components/WorkWithUsSection";
 import AdminPanel from "./components/AdminPanel";
+
 
 export interface CurrentUser {
   nombre: string;
@@ -195,13 +197,13 @@ function App() {
                     left: "50%",
                     transform: "translateX(-50%)",
                     zIndex: 50,
-                    background: "rgba(10,10,20,0.96)",
-                    backdropFilter: "blur(24px)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: "18px",
+                    background: "#000",
+                    border: "1px solid #22c55e",
+                    borderRadius: "4px",
                     padding: "0.5rem",
-                    minWidth: "250px",
-                    boxShadow: "0 -20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05) inset",
+                    minWidth: "220px",
+                    fontFamily: "monospace, 'Courier New', Courier",
+                    boxShadow: "0 0 15px rgba(34, 197, 94, 0.2)",
                   }}
                 >
                   <a
@@ -212,56 +214,42 @@ function App() {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "0.875rem",
-                      padding: "0.875rem 1rem",
-                      borderRadius: "12px",
-                      color: "white",
+                      gap: "0.5rem",
+                      padding: "0.5rem 0.75rem",
+                      color: "#22c55e",
                       textDecoration: "none",
-                      fontSize: "0.9rem",
+                      fontSize: "0.95rem",
                       transition: "background 0.2s",
                     }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.07)")}
+                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(34, 197, 94, 0.1)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                   >
-                    <div style={{ width: "36px", height: "36px", background: "linear-gradient(135deg, #60a5fa, #a78bfa)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <span style={{ fontSize: "1rem" }}>🌐</span>
-                    </div>
-                    <div style={{ textAlign: "left" }}>
-                      <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>Ver Portafolio</div>
-                      <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.45)", marginTop: "1px" }}>avportafolios.web.app</div>
-                    </div>
+                    <span>{'>'}</span>
+                    <span>Ver Portafolio</span>
                   </a>
-
-                  <div style={{ height: "1px", background: "rgba(255,255,255,0.07)", margin: "0.25rem 0.5rem" }} />
 
                   <button
                     onClick={() => { setShowDesignerMenu(false); setActiveTab("admin"); }}
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "0.875rem",
-                      padding: "0.875rem 1rem",
-                      borderRadius: "12px",
+                      gap: "0.5rem",
+                      padding: "0.5rem 0.75rem",
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "rgba(255,255,255,0.7)",
-                      fontSize: "0.9rem",
+                      color: "#22c55e",
+                      fontSize: "0.95rem",
                       cursor: "pointer",
                       transition: "background 0.2s",
                       textAlign: "left",
                       fontFamily: "inherit",
                     }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.07)")}
+                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(34, 197, 94, 0.1)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                   >
-                    <div style={{ width: "36px", height: "36px", background: "rgba(255,255,255,0.06)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <span style={{ fontSize: "1rem" }}>⚙️</span>
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>Modo Admin</div>
-                      <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.35)", marginTop: "1px" }}>Requiere autenticación</div>
-                    </div>
+                    <span>{'>'}</span>
+                    <span>Modo Admin</span>
                   </button>
                 </motion.div>
               </>

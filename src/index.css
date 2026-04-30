@@ -153,6 +153,8 @@ html {
     position: relative;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity;
+    transform: translateZ(0);
   }
   .liquid-glass {
     background: var(--glass-bg);
@@ -165,6 +167,8 @@ html {
     position: relative;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity, box-shadow;
+    transform: translateZ(0);
   }
   .liquid-glass::before {
     content: "";
@@ -198,6 +202,8 @@ html {
     position: relative;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity, box-shadow;
+    transform: translateZ(0);
   }
   .liquid-glass-strong::before {
     content: "";

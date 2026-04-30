@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Bell, LogOut, ClipboardList, Users, Rocket, MessageCircle, Camera } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Bell, LogOut, ClipboardList, Users, Rocket, MessageCircle, Camera, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
 import { collection, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import ViolenceModal from './ViolenceModal';
 
 import type { CurrentUser } from '../App';
 
@@ -20,6 +21,16 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
   const [curso, setCurso] = useState('1');
   const [division, setDivision] = useState('A');
   const [isLoading, setIsLoading] = useState(false);
+  const [showViolenceModal, setShowViolenceModal] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Prefetching silencioso
+      getDocs(collection(db, 'anuncios')).catch(() => {});
+      getDocs(collection(db, 'actas')).catch(() => {});
+      getDocs(collection(db, 'encuestas')).catch(() => {});
+    }
+  }, [isAuthenticated]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -196,6 +207,33 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
           </div>
         </motion.div>
 
+        {/* Denunciar Violencia */}
+        <motion.div 
+          variants={itemVariants} 
+          className="liquid-glass hover-glass cursor-pointer violence-pulse" 
+          onClick={() => setShowViolenceModal(true)} 
+          style={{ 
+            padding: '2rem', 
+            gridColumn: 'span 12', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            gap: '1.5rem',
+            background: 'rgba(239, 68, 68, 0.05)',
+            border: '1px solid rgba(239, 68, 68, 0.3)'
+          }}
+        >
+          <motion.div animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+            <div style={{ background: 'rgba(239, 68, 68, 0.2)', padding: '1rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AlertTriangle size={36} color="#ef4444" />
+            </div>
+          </motion.div>
+          <div style={{ textAlign: 'left' }}>
+            <h2 style={{ fontSize: '1.8rem', margin: 0, color: '#fca5a5' }}>Denunciar caso de violencia</h2>
+            <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.6)' }}>Reporte seguro, anónimo y directo al equipo de ayuda.</p>
+          </div>
+        </motion.div>
+
         {/* Quienes Somos */}
         <motion.div variants={itemVariants} className="liquid-glass hover-glass cursor-pointer" onClick={() => navigateTo('quienes-somos')} style={{ padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '1rem', gridColumn: 'span 4' }}>
           <div style={{ background: 'rgba(192, 132, 252, 0.2)', padding: '1rem', borderRadius: '50%' }}>
@@ -250,6 +288,8 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
 
       </motion.div>
 
+      <ViolenceModal isOpen={showViolenceModal} onClose={() => setShowViolenceModal(false)} />
+
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} style={{ textAlign: 'center', marginTop: '4rem', marginBottom: '1rem' }}>
         <p className="typewriter-slogan" style={{ display: 'inline-block', margin: 0, fontSize: '2rem', fontStyle: 'italic', fontWeight: 600, color: 'var(--text-muted)' }}>
           "Tu voz, vale."
@@ -274,6 +314,14 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
           animation: 
             typing 6s steps(20, end) infinite,
             blink-caret .75s step-end infinite;
+        }
+        @keyframes violence-pulse {
+          0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+          50% { box-shadow: 0 0 20px 10px rgba(239, 68, 68, 0.1); background: rgba(239, 68, 68, 0.1); }
+          100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .violence-pulse {
+          animation: violence-pulse 3s infinite;
         }
       `}</style>
     </div>
