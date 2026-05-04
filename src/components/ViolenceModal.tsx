@@ -101,7 +101,7 @@ const ViolenceModal: React.FC<ViolenceModalProps> = React.memo(({ isOpen, onClos
         if (prev <= 1) {
           clearInterval(timer);
           document.body.style.overflow = '';
-          window.open('https://docs.google.com/forms/d/1gjkQttFdWdm66cTtdAWsGuOZ_9ACf95eNToL--TXTP4/viewform', '_blank');
+          window.location.href = 'https://docs.google.com/forms/d/1gjkQttFdWdm66cTtdAWsGuOZ_9ACf95eNToL--TXTP4/viewform';
           onClose();
           return 0;
         }
