@@ -178,7 +178,7 @@ function App() {
               onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
               onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
             >
-              Designed by Agustín Vega
+              Diseñado por Agustin Vega
             </button>
 
             {showDesignerMenu && (

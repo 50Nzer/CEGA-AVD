@@ -667,12 +667,22 @@ textarea {
   animation: rotateGlow 3s linear infinite;
 }
 
-.hero-glow-container:hover .hero-glow-ring::before {
+.hero-glow-container:hover .hero-glow-ring::before,
+.hero-glow-container.clicked-desktop .hero-glow-ring::before {
   animation-duration: 1.5s;
+}
+
+.hero-glow-container.clicked-mobile .hero-glow-ring::before {
+  animation: rotateGlowAccelerating 5s ease-in forwards;
 }
 
 @keyframes rotateGlow {
   100% {
     transform: translate(-50%, -50%) rotate(360deg);
   }
+}
+
+@keyframes rotateGlowAccelerating {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(10800deg); }
 }

@@ -154,8 +154,8 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
               </div>
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}>División</label>
-                <select style={formInputStyle} value={division} onChange={e => setDivision(e.target.value)}>
-                  {['A', 'B', 'C', 'D', 'E', 'F'].map(d => <option key={d} value={d} style={{color: 'black'}}>{d}</option>)}
+                <select style={formInputStyle} value={division} onChange={e => setDivision(e.target.value)} translate="no">
+                  {['A', 'B', 'C', 'D', 'E', 'F'].map(d => <option key={d} value={d} style={{color: 'black'}} translate="no">{d}</option>)}
                 </select>
               </div>
             </div>
