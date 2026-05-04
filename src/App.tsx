@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Home, Calendar, FileText, MessageSquare } from "lucide-react";
 import HeroSection from "./components/HeroSection";
