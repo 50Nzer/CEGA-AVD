@@ -224,7 +224,7 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
           </div>
         </motion.div>
 
-        {/* Denunciar Violencia */}
+        {/* Situación conflictiva */}
         <motion.div 
           variants={itemVariants} 
           className="liquid-glass hover-glass cursor-pointer violence-pulse" 
@@ -248,7 +248,7 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
             </div>
           </motion.div>
           <div>
-            <h2 style={{ fontSize: '1.4rem', margin: 0, color: '#fca5a5' }}>Denunciar Violencia</h2>
+            <h2 style={{ fontSize: '1.4rem', margin: 0, color: '#fca5a5' }}>Situación conflictiva</h2>
             <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem' }}>Reporte anónimo y seguro.</p>
           </div>
         </motion.div>

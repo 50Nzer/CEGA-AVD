@@ -85,11 +85,11 @@ const TypewriterText = React.memo(() => {
 });
 
 const ViolenceModal: React.FC<ViolenceModalProps> = React.memo(({ isOpen, onClose }) => {
-  const [timeLeft, setTimeLeft] = useState(15);
+  const [timeLeft, setTimeLeft] = useState(10);
 
   useEffect(() => {
     if (!isOpen) {
-      setTimeLeft(15);
+      setTimeLeft(10);
       document.body.style.overflow = '';
       return;
     }
@@ -117,7 +117,7 @@ const ViolenceModal: React.FC<ViolenceModalProps> = React.memo(({ isOpen, onClos
 
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (timeLeft / 15) * circumference;
+  const strokeDashoffset = circumference - (timeLeft / 10) * circumference;
 
   return createPortal(
     <AnimatePresence>
