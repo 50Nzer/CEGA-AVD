@@ -62,7 +62,7 @@ const AnnouncementsSection: React.FC<AnnouncementsProps> = ({ onBack }) => {
       </motion.div>
 
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem 0' }}>
+        <div style={{ display: 'flex', width: '100%', justifyContent: 'center', padding: '4rem 0' }}>
           <Loader2 size={40} color="var(--text-muted)" style={{ animation: 'spin 1s linear infinite' }} />
           <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
         </div>

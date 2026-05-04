@@ -153,9 +153,9 @@ function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20, scale: 0.98 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            style={{ flex: 1, display: "flex", flexDirection: "column" }}
+            style={{ flex: 1, display: "flex", flexDirection: "column", width: "100%" }}
           >
-            <Suspense fallback={<div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="loading-spinner-container-centered" style={{position: 'relative', transform: 'none', top: 0, left: 0}}><span></span><span></span><span></span><span></span></div></div>}>
+            <Suspense fallback={<div style={{ flex: 1, display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><div className="loading-spinner-container-centered" style={{position: 'relative', transform: 'none', top: 0, left: 0}}><span></span><span></span><span></span><span></span></div></div>}>
               {activeTab === "hero" && (
                 <HeroSection onEnter={() => setActiveTab("home")} />
               )}
