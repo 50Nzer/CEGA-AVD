@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Download, FileText, CheckCircle2 } from 'lucide-react';
+import { Download, FileText, CheckCircle2, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 const DocumentsSection = () => {
   const [actas, setActas] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const q = query(collection(db, 'documentos')); 
     const unsub = onSnapshot(q, (snap) => {
       setActas(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
+      setLoading(false);
+    }, () => setLoading(false));
     return () => unsub();
   }, []);
 
@@ -24,49 +26,62 @@ const DocumentsSection = () => {
         </p>
       </div>
 
-      <motion.div 
-        style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '900px', margin: '0 auto' }}
-        initial="hidden" animate="show"
-        variants={{
-          hidden: { opacity: 0 },
-          show: { opacity: 1, transition: { staggerChildren: 0.1 } }
-        }}
-      >
-        {actas.map((acta) => (
-          <motion.div 
-            key={acta.id} 
-            className="liquid-glass hover-glass acta-item" 
-            variants={{ hidden: { opacity: 0, x: -20 }, show: { opacity: 1, x: 0, transition: { type: 'spring' } } }}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem 2rem', borderRadius: '24px' }}
-          >
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1rem', borderRadius: '12px' }}>
-                <FileText size={24} />
-              </div>
-              <div>
-                <h3 style={{ margin: '0 0 0.25rem', fontSize: '1.2rem', fontWeight: 500 }}>{acta.title}</h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                  <span>{acta.date}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: acta.status === 'Aprobada' ? '#34d399' : acta.status === 'Enviada' ? '#60a5fa' : '#fbbf24' }}>
-                    <CheckCircle2 size={14} /> {acta.status}
-                  </span>
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem 0' }}>
+          <Loader2 size={40} color="var(--text-muted)" style={{ animation: 'spin 1s linear infinite' }} />
+          <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+        </div>
+      ) : actas.length === 0 ? (
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="liquid-glass" style={{ maxWidth: '600px', margin: '0 auto', padding: '4rem 2rem', borderRadius: '24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📁</div>
+          <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.75rem' }}>No hay documentos disponibles</h2>
+          <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '1.05rem' }}>Aún no se han subido actas o resoluciones al sistema.</p>
+        </motion.div>
+      ) : (
+        <motion.div 
+          style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '900px', margin: '0 auto' }}
+          initial="hidden" animate="show"
+          variants={{
+            hidden: { opacity: 0 },
+            show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+          }}
+        >
+          {actas.map((acta) => (
+            <motion.div 
+              key={acta.id} 
+              className="liquid-glass hover-glass acta-item" 
+              variants={{ hidden: { opacity: 0, x: -20 }, show: { opacity: 1, x: 0, transition: { type: 'spring' } } }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem 2rem', borderRadius: '24px' }}
+            >
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1rem', borderRadius: '12px' }}>
+                  <FileText size={24} />
+                </div>
+                <div>
+                  <h3 style={{ margin: '0 0 0.25rem', fontSize: '1.2rem', fontWeight: 500 }}>{acta.title}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                    <span>{acta.date}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: acta.status === 'Aprobada' ? '#34d399' : acta.status === 'Enviada' ? '#60a5fa' : '#fbbf24' }}>
+                      <CheckCircle2 size={14} /> {acta.status}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <a 
-              href={acta.url} 
-              target="_blank" rel="noopener noreferrer"
-              className="liquid-glass-strong hover-glass" 
-              style={{ textDecoration: 'none', padding: '0.75rem 1.5rem', borderRadius: '24px', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'white' }}
-            >
-              <Download size={18} /> Abrir Archivo
-            </a>
-            
-          </motion.div>
-        ))}
-      </motion.div>
+              <a 
+                href={acta.url} 
+                target="_blank" rel="noopener noreferrer"
+                className="liquid-glass-strong hover-glass" 
+                style={{ textDecoration: 'none', padding: '0.75rem 1.5rem', borderRadius: '24px', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'white' }}
+              >
+                <Download size={18} /> Abrir Archivo
+              </a>
+              
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
       
       <style>{`
         @media (max-width: 600px) {

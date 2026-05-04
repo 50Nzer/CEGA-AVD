@@ -1,17 +1,17 @@
-import { useState } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Home, Calendar, FileText, MessageSquare } from "lucide-react";
 import HeroSection from "./components/HeroSection";
 import HomeSection from "./components/HomeSection";
 
-import CalendarSection from "./components/CalendarSection";
-import DocumentsSection from "./components/DocumentsSection";
-import ContactSection from "./components/ContactSection";
-import AnnouncementsSection from "./components/AnnouncementsSection";
-import SurveysSection from "./components/SurveysSection";
-import AboutUsSection from "./components/AboutUsSection";
-import WorkWithUsSection from "./components/WorkWithUsSection";
-import AdminPanel from "./components/AdminPanel";
+const CalendarSection = lazy(() => import("./components/CalendarSection"));
+const DocumentsSection = lazy(() => import("./components/DocumentsSection"));
+const ContactSection = lazy(() => import("./components/ContactSection"));
+const AnnouncementsSection = lazy(() => import("./components/AnnouncementsSection"));
+const SurveysSection = lazy(() => import("./components/SurveysSection"));
+const AboutUsSection = lazy(() => import("./components/AboutUsSection"));
+const WorkWithUsSection = lazy(() => import("./components/WorkWithUsSection"));
+const AdminPanel = lazy(() => import("./components/AdminPanel"));
 
 
 export interface CurrentUser {
@@ -23,8 +23,25 @@ export interface CurrentUser {
 
 function App() {
   const [activeTab, setActiveTab] = useState("hero");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('isAuthenticated') === 'true';
+  });
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(() => {
+    const savedUser = localStorage.getItem('currentUser');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('isAuthenticated', String(isAuthenticated));
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('currentUser');
+    }
+  }, [currentUser]);
   const [showDesignerMenu, setShowDesignerMenu] = useState(false);
 
   const navStyles = {
@@ -138,25 +155,27 @@ function App() {
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             style={{ flex: 1, display: "flex", flexDirection: "column" }}
           >
-            {activeTab === "hero" && (
-              <HeroSection onEnter={() => setActiveTab("home")} />
-            )}
-            {activeTab === "home" && (
-              <HomeSection
-                isAuthenticated={isAuthenticated}
-                setIsAuthenticated={setIsAuthenticated}
-                navigateTo={setActiveTab}
-                setCurrentUser={setCurrentUser}
-              />
-            )}
-            {activeTab === "calendar" && <CalendarSection />}
-            {activeTab === "documents" && <DocumentsSection />}
-            {activeTab === "contact" && <ContactSection currentUser={currentUser} />}
-            {activeTab === "anuncios" && <AnnouncementsSection onBack={() => setActiveTab("home")} />}
-            {activeTab === "encuestas" && <SurveysSection onBack={() => setActiveTab("home")} />}
-            {activeTab === "quienes-somos" && <AboutUsSection onBack={() => setActiveTab("home")} />}
-            {activeTab === "trabaja-con-nosotros" && <WorkWithUsSection onBack={() => setActiveTab("home")} />}
-            {activeTab === "admin" && <AdminPanel onBack={() => setActiveTab("home")} />}
+            <Suspense fallback={<div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="loading-spinner-container-centered" style={{position: 'relative', transform: 'none', top: 0, left: 0}}><span></span><span></span><span></span><span></span></div></div>}>
+              {activeTab === "hero" && (
+                <HeroSection onEnter={() => setActiveTab("home")} />
+              )}
+              {activeTab === "home" && (
+                <HomeSection
+                  isAuthenticated={isAuthenticated}
+                  setIsAuthenticated={setIsAuthenticated}
+                  navigateTo={setActiveTab}
+                  setCurrentUser={setCurrentUser}
+                />
+              )}
+              {activeTab === "calendar" && <CalendarSection />}
+              {activeTab === "documents" && <DocumentsSection />}
+              {activeTab === "contact" && <ContactSection currentUser={currentUser} />}
+              {activeTab === "anuncios" && <AnnouncementsSection onBack={() => setActiveTab("home")} />}
+              {activeTab === "encuestas" && <SurveysSection onBack={() => setActiveTab("home")} />}
+              {activeTab === "quienes-somos" && <AboutUsSection onBack={() => setActiveTab("home")} />}
+              {activeTab === "trabaja-con-nosotros" && <WorkWithUsSection onBack={() => setActiveTab("home")} />}
+              {activeTab === "admin" && <AdminPanel onBack={() => setActiveTab("home")} />}
+            </Suspense>
           </motion.div>
         </AnimatePresence>
 

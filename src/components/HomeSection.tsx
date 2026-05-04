@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Bell, LogOut, ClipboardList, Users, Rocket, MessageCircle, Camera, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
-import { collection, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, serverTimestamp, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import ViolenceModal from './ViolenceModal';
 
@@ -23,10 +23,19 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
   const [isLoading, setIsLoading] = useState(false);
   const [showViolenceModal, setShowViolenceModal] = useState(false);
 
+  const [ultimoAnuncio, setUltimoAnuncio] = useState<any>(null);
+
   useEffect(() => {
     if (isAuthenticated) {
+      // Fetch último anuncio
+      const q = query(collection(db, 'anuncios'), orderBy('timestamp', 'desc'), limit(1));
+      getDocs(q).then(snap => {
+        if (!snap.empty) {
+          setUltimoAnuncio(snap.docs[0].data());
+        }
+      }).catch(() => {});
+
       // Prefetching silencioso
-      getDocs(collection(db, 'anuncios')).catch(() => {});
       getDocs(collection(db, 'actas')).catch(() => {});
       getDocs(collection(db, 'encuestas')).catch(() => {});
     }
@@ -184,8 +193,8 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
       <motion.div className="bento-grid" variants={containerVariants} initial="hidden" animate="show">
         
         {/* Anuncios */}
-        <motion.div variants={itemVariants} className="liquid-glass hover-glass cursor-pointer" onClick={() => navigateTo('anuncios')} style={{ padding: '2rem', gridColumn: 'span 8', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+        <motion.div variants={itemVariants} className="liquid-glass hover-glass cursor-pointer full-width-mobile" onClick={() => navigateTo('anuncios')} style={{ padding: '2rem', gridColumn: 'span 8', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: ultimoAnuncio ? '1rem' : 0 }}>
             <div style={{ background: 'rgba(252, 211, 77, 0.2)', padding: '1rem', borderRadius: '50%' }}>
               <Bell size={28} color="#fcd34d" />
             </div>
@@ -194,6 +203,14 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
               <p style={{ margin: 0, color: 'var(--text-muted)' }}>Novedades e información oficial.</p>
             </div>
           </div>
+          {ultimoAnuncio && (
+            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '12px', borderLeft: '3px solid #fcd34d' }}>
+              <h4 style={{ margin: '0 0 0.25rem', fontSize: '1rem', color: '#fcd34d' }}>Último Anuncio:</h4>
+              <p style={{ margin: 0, fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {ultimoAnuncio.titulo || "Toca para ver las novedades"}
+              </p>
+            </div>
+          )}
         </motion.div>
 
         {/* Encuestas */}
@@ -214,11 +231,13 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
           onClick={() => setShowViolenceModal(true)} 
           style={{ 
             padding: '2rem', 
-            gridColumn: 'span 12', 
+            gridColumn: 'span 6', 
             display: 'flex', 
+            flexDirection: 'column',
             alignItems: 'center', 
             justifyContent: 'center',
-            gap: '1.5rem',
+            textAlign: 'center',
+            gap: '1rem',
             background: 'rgba(239, 68, 68, 0.05)',
             border: '1px solid rgba(239, 68, 68, 0.3)'
           }}
@@ -228,33 +247,31 @@ const HomeSection: React.FC<HomeSectionProps> = ({ isAuthenticated, setIsAuthent
               <AlertTriangle size={36} color="#ef4444" />
             </div>
           </motion.div>
-          <div style={{ textAlign: 'left' }}>
-            <h2 style={{ fontSize: '1.8rem', margin: 0, color: '#fca5a5' }}>Denunciar caso de violencia</h2>
-            <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.6)' }}>Reporte seguro, anónimo y directo al equipo de ayuda.</p>
-          </div>
-        </motion.div>
-
-        {/* Quienes Somos */}
-        <motion.div variants={itemVariants} className="liquid-glass hover-glass cursor-pointer" onClick={() => navigateTo('quienes-somos')} style={{ padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '1rem', gridColumn: 'span 4' }}>
-          <div style={{ background: 'rgba(192, 132, 252, 0.2)', padding: '1rem', borderRadius: '50%' }}>
-            <Users size={32} color="#c084fc" />
-          </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.3rem' }}>¿Quiénes Somos?</h3>
-            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Conocé al equipo.</p>
+            <h2 style={{ fontSize: '1.4rem', margin: 0, color: '#fca5a5' }}>Denunciar Violencia</h2>
+            <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem' }}>Reporte anónimo y seguro.</p>
           </div>
         </motion.div>
 
         {/* Trabaja con Nosotros */}
-        <motion.div variants={itemVariants} className="liquid-glass hover-glass cursor-pointer" onClick={() => navigateTo('trabaja-con-nosotros')} style={{ padding: '2rem', gridColumn: 'span 8', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ background: 'linear-gradient(135deg, #f43f5e, #ec4899)', padding: '1rem', borderRadius: '50%', boxShadow: '0 4px 15px rgba(244, 63, 94, 0.4)' }}>
-              <Rocket size={28} color="white" />
-            </div>
-            <div>
-              <h2 style={{ fontSize: '1.8rem', margin: 0 }}>Trabaja con Nosotros</h2>
-              <p style={{ margin: 0, color: 'var(--text-muted)' }}>Sumate a representar el colegio.</p>
-            </div>
+        <motion.div variants={itemVariants} className="liquid-glass hover-glass cursor-pointer full-width-mobile" onClick={() => navigateTo('trabaja-con-nosotros')} style={{ padding: '2rem', gridColumn: 'span 6', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '1rem' }}>
+          <div style={{ background: 'linear-gradient(135deg, #f43f5e, #ec4899)', padding: '1rem', borderRadius: '50%', boxShadow: '0 4px 15px rgba(244, 63, 94, 0.4)' }}>
+            <Rocket size={32} color="white" />
+          </div>
+          <div>
+            <h2 style={{ fontSize: '1.4rem', margin: 0 }}>Trabaja con Nosotros</h2>
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Sumate a representar el colegio.</p>
+          </div>
+        </motion.div>
+
+        {/* Quienes Somos */}
+        <motion.div variants={itemVariants} className="liquid-glass hover-glass cursor-pointer full-width-mobile" onClick={() => navigateTo('quienes-somos')} style={{ padding: '2rem', gridColumn: 'span 12', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem' }}>
+          <div style={{ background: 'rgba(192, 132, 252, 0.2)', padding: '1.5rem', borderRadius: '50%' }}>
+            <Users size={40} color="#c084fc" />
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <h2 style={{ fontSize: '2rem', margin: 0 }}>¿Quiénes Somos?</h2>
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '1.1rem' }}>Conocé a los integrantes del equipo CEGA 2026.</p>
           </div>
         </motion.div>
 
